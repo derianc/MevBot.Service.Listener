@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35312.102
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MevBot.Service.Listener", "MevBot.Service.Listener.csproj", "{D8863953-ED3C-4790-B801-21669C5C12C6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MevBot.Service.Listener", "MevBot.Service.Listener\MevBot.Service.Listener.csproj", "{DDAE6B2C-64B6-4849-A94D-83C3C5EDA672}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{D8863953-ED3C-4790-B801-21669C5C12C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D8863953-ED3C-4790-B801-21669C5C12C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D8863953-ED3C-4790-B801-21669C5C12C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D8863953-ED3C-4790-B801-21669C5C12C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DDAE6B2C-64B6-4849-A94D-83C3C5EDA672}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDAE6B2C-64B6-4849-A94D-83C3C5EDA672}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDAE6B2C-64B6-4849-A94D-83C3C5EDA672}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDAE6B2C-64B6-4849-A94D-83C3C5EDA672}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {FE07F73A-CF0A-4C29-A34A-DC0FA2C40D16}
+		SolutionGuid = {C24CEA6D-90A6-462C-9179-CE26800040DC}
 	EndGlobalSection
 EndGlobal
