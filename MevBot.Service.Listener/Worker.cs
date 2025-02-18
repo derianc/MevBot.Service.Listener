@@ -13,7 +13,7 @@ namespace MevBot.Service.Listener
         private readonly IDatabase _redisDb;
 
         private readonly string _wsUrl;
-        private readonly string _splTokenAddress;
+        // private readonly string _splTokenAddress;
         private readonly string _redisQueueName = "solana_logs_queue";
         private readonly string _redisConnectionString;
 
@@ -23,7 +23,7 @@ namespace MevBot.Service.Listener
             _configuration = configuration;
 
             _wsUrl = _configuration.GetValue<string>("Solana:WsUrl") ?? string.Empty;
-            _splTokenAddress = _configuration.GetValue<string>("Solana:SPL_TOKEN_ADDRESS") ?? string.Empty;
+            // _splTokenAddress = _configuration.GetValue<string>("Solana:SPL_TOKEN_ADDRESS") ?? string.Empty;
             _redisConnectionString = _configuration.GetValue<string>("Redis:REDIS_URL") ?? string.Empty;
 
             // connect to redis
@@ -55,8 +55,8 @@ namespace MevBot.Service.Listener
                         @params = new object[]
                         {
                         // Filter logs that mention the SPL token address.
-                        new { mentions = new string[] { _splTokenAddress } },
-                        //"all",
+                        // new { mentions = new string[] { _splTokenAddress } },
+                        "all",
                         new { commitment = "confirmed" }
                         }
                     };
@@ -68,10 +68,6 @@ namespace MevBot.Service.Listener
 
                     // Buffer for receiving messages.
                     var buffer = new byte[4096];
-
-                    //// Push test message to Redis
-                    //await _redisDb.ListLeftPushAsync(_redisQueueName, "Test message");
-                    //_logger.LogInformation("{time} - Message pushed to Redis queue", DateTimeOffset.Now);
 
                     // Continuously receive messages.
                     while (ws.State == WebSocketState.Open)
@@ -91,10 +87,6 @@ namespace MevBot.Service.Listener
 
                             try
                             {
-                                // Deserialize the JSON response into our LogsNotificationResponse object.
-                                //var logsNotification = JsonSerializer.Deserialize<LogsNotificationResponse>(response);
-                                //_logger.LogInformation("{time} - Received JSON: " + logsNotification, DateTimeOffset.Now);
-
                                 // push message to redis
                                 await _redisDb.ListLeftPushAsync(_redisQueueName, response);
                                 _logger.LogInformation("{time} - Pushed logsNotification to Redis queue: {queueName}", DateTimeOffset.Now, _redisQueueName);
