@@ -55,8 +55,8 @@ namespace MevBot.Service.Listener
                         @params = new object[]
                         {
                         // Filter logs that mention the SPL token address.
-                        //new { mentions = new string[] { SPL_TOKEN_ADDRESS } },
-                        "all",
+                        new { mentions = new string[] { _splTokenAddress } },
+                        //"all",
                         new { commitment = "confirmed" }
                         }
                     };
@@ -69,9 +69,9 @@ namespace MevBot.Service.Listener
                     // Buffer for receiving messages.
                     var buffer = new byte[4096];
 
-                    // Push test message to Redis
-                    await _redisDb.ListLeftPushAsync(_redisQueueName, "Test message");
-                    _logger.LogInformation("{time} - Message pushed to Redis queue", DateTimeOffset.Now);
+                    //// Push test message to Redis
+                    //await _redisDb.ListLeftPushAsync(_redisQueueName, "Test message");
+                    //_logger.LogInformation("{time} - Message pushed to Redis queue", DateTimeOffset.Now);
 
                     // Continuously receive messages.
                     while (ws.State == WebSocketState.Open)
