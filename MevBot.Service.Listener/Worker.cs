@@ -14,7 +14,7 @@ namespace MevBot.Service.Listener
 
         private readonly string _wsUrl;
         // private readonly string _splTokenAddress;
-        private readonly string _redisQueueName = "solana_logs_queue";
+        private readonly string _redisAnalyzeQueue = "solana_logs_queue";
         private readonly string _redisConnectionString;
 
         public Worker(ILogger<Worker> logger, IConfiguration configuration)
@@ -88,8 +88,8 @@ namespace MevBot.Service.Listener
                             try
                             {
                                 // push message to redis
-                                await _redisDb.ListLeftPushAsync(_redisQueueName, response);
-                                _logger.LogInformation("{time} - Pushed logsNotification to Redis queue: {queueName}", DateTimeOffset.Now, _redisQueueName);
+                                await _redisDb.ListLeftPushAsync(_redisAnalyzeQueue, response);
+                                _logger.LogInformation("{time} - Pushed logsNotification to Redis queue: {queueName}", DateTimeOffset.Now, _redisAnalyzeQueue);
                             }
                             catch (JsonException ex)
                             {
