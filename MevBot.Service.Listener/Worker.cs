@@ -14,7 +14,7 @@ namespace MevBot.Service.Listener
 
         private readonly string _wsUrl;
         // private readonly string _splTokenAddress;
-        private readonly string _redisAnalyzeQueue = "solana_logs_queue";
+        private readonly string _redisAnalyzeQueue = "solana_analyze_queue";
         private readonly string _redisConnectionString;
 
         public Worker(ILogger<Worker> logger, IConfiguration configuration)
