@@ -36,69 +36,82 @@ namespace MevBot.Service.Listener
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            int retryDelaySeconds = 60;
+
+            _logger.LogInformation("{time} - Starting Solana MEV Bot Listener", DateTimeOffset.Now);
+
             while (!stoppingToken.IsCancellationRequested)
             {
-                _logger.LogInformation("{time} - Starting Solana MEV Bot with SPL Token filter: ", DateTimeOffset.Now);
-
-                using (ClientWebSocket ws = new ClientWebSocket())
+                try
                 {
-                    await ws.ConnectAsync(new Uri(_wsUrl), CancellationToken.None);
-                    _logger.LogInformation("{time} - Connected to Solana WebSocket", DateTimeOffset.Now);
-
-                    // Prepare and send the subscription message.
-                    // This subscribes to log messages filtered by the specified SPL token address.
-                    var subscribeMessage = new
+                    // Create and connect WebSocket
+                    using (ClientWebSocket ws = new ClientWebSocket())
                     {
-                        jsonrpc = "2.0",
-                        id = 1,
-                        method = "logsSubscribe",
-                        @params = new object[]
+                        _logger.LogInformation("{time} - Connecting to WebSocket: {wsUrl}", DateTimeOffset.Now, _wsUrl);
+                        await ws.ConnectAsync(new Uri(_wsUrl), stoppingToken);
+                        _logger.LogInformation("{time} - Connected to WebSocket", DateTimeOffset.Now);
+
+                        // Prepare and send the subscription message.
+                        var subscribeMessage = new
                         {
-                        // Filter logs that mention the SPL token address.
-                        // new { mentions = new string[] { _splTokenAddress } },
-                        "all",
-                        new { commitment = "confirmed" }
-                        }
-                    };
-
-                    string messageJson = JsonSerializer.Serialize(subscribeMessage);
-                    var messageBytes = new ArraySegment<byte>(Encoding.UTF8.GetBytes(messageJson));
-                    await ws.SendAsync(messageBytes, WebSocketMessageType.Text, true, CancellationToken.None);
-                    _logger.LogInformation("{time} - Subscription message sent. Listening for log events", DateTimeOffset.Now);
-
-                    // Buffer for receiving messages.
-                    var buffer = new byte[4096];
-
-                    // Continuously receive messages.
-                    while (ws.State == WebSocketState.Open)
-                    {
-                        WebSocketReceiveResult result = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-
-                        if (result.MessageType == WebSocketMessageType.Close)
-                        {
-                            await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", CancellationToken.None);
-                            _logger.LogInformation("{time} - Websocket Closed", DateTimeOffset.Now);
-                            break;
-                        }
-                        else if (result.MessageType == WebSocketMessageType.Text)
-                        {
-                            // Convert the received bytes into a string.
-                            string response = Encoding.UTF8.GetString(buffer, 0, result.Count);
-
-                            try
+                            jsonrpc = "2.0",
+                            id = 1,
+                            method = "logsSubscribe",
+                            @params = new object[]
                             {
-                                // push message to redis
-                                await _redisDb.ListLeftPushAsync(_redisAnalyzeQueue, response);
-                                _logger.LogInformation("{time} - Pushed logsNotification to Redis queue: {queueName}", DateTimeOffset.Now, _redisAnalyzeQueue);
+                                // Uncomment and update filter as needed.
+                                // new { mentions = new string[] { _splTokenAddress } },
+                                "all",
+                                new { commitment = "confirmed" }
                             }
-                            catch (JsonException ex)
+                        };
+
+                        string messageJson = JsonSerializer.Serialize(subscribeMessage);
+                        var messageBytes = new ArraySegment<byte>(Encoding.UTF8.GetBytes(messageJson));
+                        await ws.SendAsync(messageBytes, WebSocketMessageType.Text, true, stoppingToken);
+                        _logger.LogInformation("{time} - Subscription message sent. Listening for log events", DateTimeOffset.Now);
+
+                        var buffer = new byte[4096];
+
+                        // Process messages until the connection is closed.
+                        while (ws.State == WebSocketState.Open && !stoppingToken.IsCancellationRequested)
+                        {
+                            WebSocketReceiveResult result = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), stoppingToken);
+
+                            if (result.MessageType == WebSocketMessageType.Close)
                             {
-                                Console.WriteLine("JSON Deserialization error: " + ex.Message);
+                                _logger.LogWarning("{time} - WebSocket closed by remote party", DateTimeOffset.Now);
+                                await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", stoppingToken);
+                                break;
+                            }
+                            else if (result.MessageType == WebSocketMessageType.Text)
+                            {
+                                string response = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                                try
+                                {
+                                    // Push the message to the Redis analyze queue.
+                                    await _redisDb.ListLeftPushAsync(_redisAnalyzeQueue, response);
+                                    _logger.LogInformation("{time} - Pushed message to Redis queue: {queueName}", DateTimeOffset.Now, _redisAnalyzeQueue);
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.LogError("Error pushing message to Redis: {Message}", ex.Message);
+                                }
                             }
                         }
                     }
                 }
-                await Task.Delay(1000, stoppingToken);
+                catch (WebSocketException ex)
+                {
+                    _logger.LogError("{time} - WebSocket error: {Error}. Restarting connection in {Delay} seconds...", DateTimeOffset.Now, ex.Message, retryDelaySeconds);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("{time} - Unexpected error: {Error}. Restarting connection in {Delay} seconds...", DateTimeOffset.Now, ex.Message, retryDelaySeconds);
+                }
+
+                // Wait before retrying the connection.
+                await Task.Delay(TimeSpan.FromSeconds(retryDelaySeconds), stoppingToken);
             }
         }
     }
