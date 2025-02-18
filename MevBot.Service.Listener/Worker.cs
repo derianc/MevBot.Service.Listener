@@ -26,25 +26,21 @@ namespace MevBot.Service.Listener
             // _splTokenAddress = _configuration.GetValue<string>("Solana:SPL_TOKEN_ADDRESS") ?? string.Empty;
             _redisConnectionString = _configuration.GetValue<string>("Redis:REDIS_URL") ?? string.Empty;
 
-            // connect to redis
+            // Connect to Redis using provided connection string.
             var options = ConfigurationOptions.Parse(_redisConnectionString);
-            // options.AbortOnConnectFail = false; // Prevents Redis from failing on first attempt
-
             _redis = ConnectionMultiplexer.Connect(options);
             _redisDb = _redis.GetDatabase();
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            int retryDelaySeconds = 60;
-
+            int retryDelaySeconds = 5;
             _logger.LogInformation("{time} - Starting Solana MEV Bot Listener", DateTimeOffset.Now);
 
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
                 {
-                    // Create and connect WebSocket
                     using (ClientWebSocket ws = new ClientWebSocket())
                     {
                         _logger.LogInformation("{time} - Connecting to WebSocket: {wsUrl}", DateTimeOffset.Now, _wsUrl);
@@ -59,7 +55,6 @@ namespace MevBot.Service.Listener
                             method = "logsSubscribe",
                             @params = new object[]
                             {
-                                // Uncomment and update filter as needed.
                                 // new { mentions = new string[] { _splTokenAddress } },
                                 "all",
                                 new { commitment = "confirmed" }
@@ -71,32 +66,27 @@ namespace MevBot.Service.Listener
                         await ws.SendAsync(messageBytes, WebSocketMessageType.Text, true, stoppingToken);
                         _logger.LogInformation("{time} - Subscription message sent. Listening for log events", DateTimeOffset.Now);
 
-                        var buffer = new byte[4096];
-
-                        // Process messages until the connection is closed.
+                        // Continuously receive and process messages.
                         while (ws.State == WebSocketState.Open && !stoppingToken.IsCancellationRequested)
                         {
-                            WebSocketReceiveResult result = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), stoppingToken);
+                            string completeMessage = await ReceiveFullMessageAsync(ws, stoppingToken);
 
-                            if (result.MessageType == WebSocketMessageType.Close)
+                            if (completeMessage == null)
                             {
-                                _logger.LogWarning("{time} - WebSocket closed by remote party", DateTimeOffset.Now);
-                                await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", stoppingToken);
+                                // If message is null, assume the connection closed.
+                                _logger.LogWarning("{time} - Received null message, breaking out", DateTimeOffset.Now);
                                 break;
                             }
-                            else if (result.MessageType == WebSocketMessageType.Text)
+
+                            // Push the complete message to Redis.
+                            try
                             {
-                                string response = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                                try
-                                {
-                                    // Push the message to the Redis analyze queue.
-                                    await _redisDb.ListLeftPushAsync(_redisAnalyzeQueue, response);
-                                    _logger.LogInformation("{time} - Pushed message to Redis queue: {queueName}", DateTimeOffset.Now, _redisAnalyzeQueue);
-                                }
-                                catch (Exception ex)
-                                {
-                                    _logger.LogError("Error pushing message to Redis: {Message}", ex.Message);
-                                }
+                                await _redisDb.ListLeftPushAsync(_redisAnalyzeQueue, completeMessage);
+                                _logger.LogInformation("{time} - Pushed message to Redis queue: {queueName}", DateTimeOffset.Now, _redisAnalyzeQueue);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError("{time} - Error pushing message to Redis: {Error}", DateTimeOffset.Now, ex.Message);
                             }
                         }
                     }
@@ -112,6 +102,32 @@ namespace MevBot.Service.Listener
 
                 // Wait before retrying the connection.
                 await Task.Delay(TimeSpan.FromSeconds(retryDelaySeconds), stoppingToken);
+            }
+        }
+
+        private async Task<string> ReceiveFullMessageAsync(ClientWebSocket ws, CancellationToken stoppingToken)
+        {
+            var buffer = new byte[4096];
+            using (var ms = new MemoryStream())
+            {
+                WebSocketReceiveResult result;
+                do
+                {
+                    result = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), stoppingToken);
+                    if (result.MessageType == WebSocketMessageType.Close)
+                    {
+                        _logger.LogWarning("{time} - WebSocket closed by remote party", DateTimeOffset.Now);
+                        await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", stoppingToken);
+                        return null;
+                    }
+                    ms.Write(buffer, 0, result.Count);
+                } while (!result.EndOfMessage);
+
+                ms.Seek(0, SeekOrigin.Begin);
+                using (var reader = new StreamReader(ms, Encoding.UTF8))
+                {
+                    return await reader.ReadToEndAsync();
+                }
             }
         }
     }
