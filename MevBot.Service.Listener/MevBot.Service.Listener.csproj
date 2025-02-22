@@ -13,4 +13,16 @@
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
     <PackageReference Include="StackExchange.Redis" Version="2.8.24" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="MevBot.Service.Data">
+      <HintPath>..\..\MevBot.Service\MevBot.Service.Data\bin\Debug\net6.0\MevBot.Service.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="MevBot.Service.Redis">
+      <HintPath>..\..\MevBot.Service\MevBot.Service.Redis\bin\Debug\net6.0\MevBot.Service.Redis.dll</HintPath>
+    </Reference>
+    <Reference Include="MevBot.Service.SolanaWebSocket">
+      <HintPath>..\..\MevBot.Service\MevBot.Service.SolanaWebSocket\bin\Debug\net6.0\MevBot.Service.SolanaWebSocket.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 </Project>
