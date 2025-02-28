@@ -5,8 +5,6 @@ VisualStudioVersion = 17.11.35312.102
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MevBot.Service.Listener", "MevBot.Service.Listener\MevBot.Service.Listener.csproj", "{DDAE6B2C-64B6-4849-A94D-83C3C5EDA672}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MevBot.Service.Data", "MevBot.Service.Data\MevBot.Service.Data.csproj", "{FAF2BE04-646A-4D2F-9A65-AB784CB13D29}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MevBot.Service.Redis", "MevBot.Service.Redis\MevBot.Service.Redis.csproj", "{523BA2FB-68EB-4298-A6CC-754CFD945B1A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MevBot.Service.SolanaWebSocket", "MevBot.Service.SolanaWebSocket\MevBot.Service.SolanaWebSocket.csproj", "{1E4BF04A-5548-48FF-8DEB-DD89E717EF91}"
@@ -21,10 +19,6 @@ Global
 		{DDAE6B2C-64B6-4849-A94D-83C3C5EDA672}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DDAE6B2C-64B6-4849-A94D-83C3C5EDA672}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DDAE6B2C-64B6-4849-A94D-83C3C5EDA672}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FAF2BE04-646A-4D2F-9A65-AB784CB13D29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FAF2BE04-646A-4D2F-9A65-AB784CB13D29}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FAF2BE04-646A-4D2F-9A65-AB784CB13D29}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FAF2BE04-646A-4D2F-9A65-AB784CB13D29}.Release|Any CPU.Build.0 = Release|Any CPU
 		{523BA2FB-68EB-4298-A6CC-754CFD945B1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{523BA2FB-68EB-4298-A6CC-754CFD945B1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{523BA2FB-68EB-4298-A6CC-754CFD945B1A}.Release|Any CPU.ActiveCfg = Release|Any CPU

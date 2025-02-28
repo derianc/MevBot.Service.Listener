@@ -15,7 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MevBot.Service.Data\MevBot.Service.Data.csproj" />
     <ProjectReference Include="..\MevBot.Service.Redis\MevBot.Service.Redis.csproj" />
     <ProjectReference Include="..\MevBot.Service.SolanaWebSocket\MevBot.Service.SolanaWebSocket.csproj" />
   </ItemGroup>
