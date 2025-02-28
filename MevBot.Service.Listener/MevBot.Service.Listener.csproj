@@ -15,14 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="MevBot.Service.Data">
-      <HintPath>..\..\MevBot.Service\MevBot.Service.Data\bin\Debug\net6.0\MevBot.Service.Data.dll</HintPath>
-    </Reference>
-    <Reference Include="MevBot.Service.Redis">
-      <HintPath>..\..\MevBot.Service\MevBot.Service.Redis\bin\Debug\net6.0\MevBot.Service.Redis.dll</HintPath>
-    </Reference>
-    <Reference Include="MevBot.Service.SolanaWebSocket">
-      <HintPath>..\..\MevBot.Service\MevBot.Service.SolanaWebSocket\bin\Debug\net6.0\MevBot.Service.SolanaWebSocket.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\MevBot.Service.Data\MevBot.Service.Data.csproj" />
+    <ProjectReference Include="..\MevBot.Service.Redis\MevBot.Service.Redis.csproj" />
+    <ProjectReference Include="..\MevBot.Service.SolanaWebSocket\MevBot.Service.SolanaWebSocket.csproj" />
   </ItemGroup>
 </Project>
