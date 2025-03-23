@@ -48,11 +48,12 @@ namespace MevBot.Service.Listener
                 if (!_splTokenAddresses.Any(token => message.Contains(token)))
                 {
                     _logger.LogInformation($"{DateTime.UtcNow}: Filtered out message.");
-                    return;
                 }
-
-                _logger.LogInformation($"{DateTime.UtcNow}: Received message: {message}");
-                await _redisPublisher.PublishMessageAsync(message, _redisAnalyzeQueue);
+                else
+                {
+                    _logger.LogInformation($"{DateTime.UtcNow}: Received message: {message}");
+                    await _redisPublisher.PublishMessageAsync(message, _redisAnalyzeQueue);
+                }
             });
 
             // Connect and subscribe to the Solana WebSocket
@@ -63,8 +64,8 @@ namespace MevBot.Service.Listener
                 method = "logsSubscribe",
                 @params = new object[]
                 {
-                    // new { mentions = _splTokenAddresses }, // Pass all the token addresses
-                    "all",
+                    new { mentions = _splTokenAddresses }, // Pass all the token addresses
+                    // "all",
                     new { commitment = "confirmed" }
                 }
             };
