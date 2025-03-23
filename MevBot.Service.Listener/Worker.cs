@@ -32,7 +32,9 @@ namespace MevBot.Service.Listener
                 Environment.Exit(1);  // This will terminate the service
             }
 
-            _splTokenAddresses = tokenAddressesConfig.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            _splTokenAddresses = tokenAddressesConfig.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                                                     .Select(token => token.Trim())
+                                                     .ToArray();
 
             _redisPublisher = new RedisPublisher(_redisConnectionString);
         }
@@ -42,7 +44,13 @@ namespace MevBot.Service.Listener
             // define the SolanaWebSocketClient
             var solanaClient = new SolanaWebSocketClient(_wsUrl, async (message) =>
             {
-                // publish the message to the Redis channel
+                // Filter the message before publishing: check if it contains any of the token addresses
+                if (!_splTokenAddresses.Any(token => message.Contains(token)))
+                {
+                    _logger.LogDebug("Filtered out message: does not contain any configured token address.");
+                    return;
+                }
+
                 await _redisPublisher.PublishMessageAsync(message, _redisAnalyzeQueue);
             });
 
