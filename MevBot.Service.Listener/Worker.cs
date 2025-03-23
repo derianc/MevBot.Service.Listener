@@ -24,6 +24,14 @@ namespace MevBot.Service.Listener
 
             // Get the comma-separated SPL token addresses and split them into an array
             var tokenAddressesConfig = _configuration.GetValue<string>("Solana:SPL_TOKEN_ADDRESS") ?? string.Empty;
+
+            // Check if token addresses string is empty, if so shutdown service
+            if (string.IsNullOrWhiteSpace(tokenAddressesConfig))
+            {
+                _logger.LogError("No SPL token addresses provided in the configuration. Shutting down the service.");
+                Environment.Exit(1);  // This will terminate the service
+            }
+
             _splTokenAddresses = tokenAddressesConfig.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
             _redisPublisher = new RedisPublisher(_redisConnectionString);
