@@ -47,7 +47,7 @@ namespace MevBot.Service.Listener
                 // Filter the message before publishing: check if it contains any of the token addresses
                 if (!_splTokenAddresses.Any(token => message.Contains(token)))
                 {
-                    _logger.LogDebug("Filtered out message: does not contain any configured token address.");
+                    _logger.LogInformation("Filtered out message: does not contain any configured token address.");
                     return;
                 }
 
