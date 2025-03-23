@@ -8,20 +8,23 @@ namespace MevBot.Service.Listener
         private readonly IConfiguration _configuration;
 
         private readonly string _wsUrl;
-        // private readonly string _splTokenAddress;
+        private readonly string[] _splTokenAddresses;
         private readonly string _redisAnalyzeQueue = "solana_analyze_queue";
         private readonly string _redisConnectionString;
 
         private readonly RedisPublisher _redisPublisher;
 
-        public Worker(ILogger<Worker> logger, IConfiguration configuration) 
+        public Worker(ILogger<Worker> logger, IConfiguration configuration)
         {
             _logger = logger;
             _configuration = configuration;
 
             _wsUrl = _configuration.GetValue<string>("Solana:WsUrl") ?? string.Empty;
             _redisConnectionString = _configuration.GetValue<string>("Redis:REDIS_URL") ?? string.Empty;
-            // _splTokenAddress = _configuration.GetValue<string>("Solana:SPL_TOKEN_ADDRESS") ?? string.Empty;
+
+            // Get the comma-separated SPL token addresses and split them into an array
+            var tokenAddressesConfig = _configuration.GetValue<string>("Solana:SPL_TOKEN_ADDRESS") ?? string.Empty;
+            _splTokenAddresses = tokenAddressesConfig.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
             _redisPublisher = new RedisPublisher(_redisConnectionString);
         }
@@ -35,7 +38,7 @@ namespace MevBot.Service.Listener
                 await _redisPublisher.PublishMessageAsync(message, _redisAnalyzeQueue);
             });
 
-            // connect and subscribe to the Solana WebSocket
+            // Connect and subscribe to the Solana WebSocket
             var subscribeMessage = new
             {
                 jsonrpc = "2.0",
@@ -43,11 +46,12 @@ namespace MevBot.Service.Listener
                 method = "logsSubscribe",
                 @params = new object[]
                 {
-                    // new { mentions = new string[] { _splTokenAddress } },
-                    "all",
+                    new { mentions = _splTokenAddresses }, // Pass all the token addresses
                     new { commitment = "confirmed" }
                 }
             };
+
+            // Connect to the WebSocket and send the subscription message
             await solanaClient.ConnectAsync();
             await solanaClient.SendAsync(subscribeMessage);
         }
