@@ -64,8 +64,8 @@ namespace MevBot.Service.Listener
                 method = "logsSubscribe",
                 @params = new object[]
                 {
-                    // new { mentions = _splTokenAddresses }, // Pass all the token addresses
-                    "all",
+                    new { mentions = _splTokenAddresses }, // Pass all the token addresses
+                    //"all",
                     new { commitment = "confirmed" }
                 }
             };
