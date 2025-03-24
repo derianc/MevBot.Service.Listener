@@ -45,11 +45,11 @@ namespace MevBot.Service.Listener
             var solanaClient = new SolanaWebSocketClient(_wsUrl, async (message) =>
             {
                 // Filter the message before publishing: check if it contains any of the token addresses
-                if (!_splTokenAddresses.Any(token => message.Contains(token)))
-                {
-                    _logger.LogInformation($"{DateTime.UtcNow}: Filtered out message.");
-                }
-                else
+                //if (!_splTokenAddresses.Any(token => message.Contains(token)))
+                //{
+                //    _logger.LogInformation($"{DateTime.UtcNow}: Filtered out message.");
+                //}
+                //else
                 {
                     _logger.LogInformation($"{DateTime.UtcNow}: Received message: {message}");
                     await _redisPublisher.PublishMessageAsync(message, _redisAnalyzeQueue);
@@ -64,8 +64,8 @@ namespace MevBot.Service.Listener
                 method = "logsSubscribe",
                 @params = new object[]
                 {
-                    new { mentions = _splTokenAddresses }, // Pass all the token addresses
-                    // "all",
+                    // new { mentions = _splTokenAddresses }, // Pass all the token addresses
+                    "all",
                     new { commitment = "confirmed" }
                 }
             };
