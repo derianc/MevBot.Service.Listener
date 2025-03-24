@@ -56,23 +56,25 @@ namespace MevBot.Service.Listener
                 }
             });
 
-            // Connect and subscribe to the Solana WebSocket
-            var subscribeMessage = new
+            int subscriptionId = 1;
+            foreach (var tokenAddress in _splTokenAddresses)
             {
-                jsonrpc = "2.0",
-                id = 1,
-                method = "logsSubscribe",
-                @params = new object[]
+                var subscribeMessage = new
                 {
-                    new { mentions = _splTokenAddresses }, // Pass all the token addresses
-                    //"all",
-                    new { commitment = "confirmed" }
-                }
-            };
+                    jsonrpc = "2.0",
+                    id = subscriptionId++,
+                    method = "logsSubscribe",
+                    @params = new object[]
+                    {
+                        new { mentions = new string[] { tokenAddress } },
+                        new { commitment = "confirmed" }
+                    }
+                };
 
-            // Connect to the WebSocket and send the subscription message
-            await solanaClient.ConnectAsync();
-            await solanaClient.SendAsync(subscribeMessage);
+                // Connect to the WebSocket and send the subscription message
+                await solanaClient.ConnectAsync();
+                await solanaClient.SendAsync(subscribeMessage);
+            }
         }
     }
 }
